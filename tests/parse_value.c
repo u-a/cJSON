@@ -30,6 +30,7 @@
 
 static cJSON item[1];
 const unsigned char *error_pointer = NULL;
+static cJSON_Hooks hooks = { malloc, free };
 
 static void assert_is_value(cJSON *value_item, int type)
 {
@@ -45,7 +46,7 @@ static void assert_is_value(cJSON *value_item, int type)
 
 static void assert_parse_value(const char *string, int type)
 {
-    TEST_ASSERT_NOT_NULL(parse_value(item, (const unsigned char*)string, &error_pointer));
+    TEST_ASSERT_NOT_NULL(parse_value(item, (const unsigned char*)string, &error_pointer, &hooks));
     assert_is_value(item, type);
 }
 
@@ -57,7 +58,7 @@ static void reset(void)
     }
     if (item->valuestring != NULL)
     {
-        cJSON_free(item->valuestring);
+        hooks.free_fn(item->valuestring);
     }
     memset(item, 0, sizeof(cJSON));
 }

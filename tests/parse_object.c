@@ -31,6 +31,7 @@
 static cJSON item[1];
 
 static const unsigned char *error_pointer = NULL;
+static cJSON_Hooks hooks = { malloc, free };
 
 static void assert_is_object(cJSON *object_item)
 {
@@ -55,12 +56,12 @@ static void assert_is_child(cJSON *child_item, const char *name, int type)
 
 static void assert_not_object(const char *json)
 {
-    TEST_ASSERT_NULL(parse_object(item, (const unsigned char*)json, &error_pointer));
+    TEST_ASSERT_NULL(parse_object(item, (const unsigned char*)json, &error_pointer, &hooks));
 }
 
 static void assert_parse_object(const char *json)
 {
-    TEST_ASSERT_NOT_NULL(parse_object(item, (const unsigned char*)json, &error_pointer));
+    TEST_ASSERT_NOT_NULL(parse_object(item, (const unsigned char*)json, &error_pointer, &hooks));
     assert_is_object(item);
 }
 

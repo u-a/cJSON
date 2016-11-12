@@ -31,6 +31,7 @@
 static cJSON item[1];
 
 static const unsigned char *error_pointer = NULL;
+static cJSON_Hooks hooks = { malloc, free };
 
 static void assert_is_string(cJSON *string_item)
 {
@@ -48,10 +49,10 @@ static void assert_is_string(cJSON *string_item)
 
 static void assert_parse_string(const char *string, const char *expected)
 {
-    TEST_ASSERT_NOT_NULL_MESSAGE(parse_string(item, (const unsigned char*)string, &error_pointer), "Couldn't parse string.");
+    TEST_ASSERT_NOT_NULL_MESSAGE(parse_string(item, (const unsigned char*)string, &error_pointer, &hooks), "Couldn't parse string.");
     assert_is_string(item);
     TEST_ASSERT_EQUAL_STRING_MESSAGE(expected, item->valuestring, "The parsed result isn't as expected.");
-    cJSON_free(item->valuestring);
+    hooks.free_fn(item->valuestring);
     item->valuestring = NULL;
 }
 
@@ -74,19 +75,19 @@ static void parse_string_should_parse_utf16_surrogate_pairs(void)
 
 static void parse_string_should_not_parse_non_strings(void)
 {
-    TEST_ASSERT_NULL(parse_string(item, (const unsigned char*)"this\" is not a string\"", &error_pointer));
-    TEST_ASSERT_NULL(parse_string(item, (const unsigned char*) "", &error_pointer));
+    TEST_ASSERT_NULL(parse_string(item, (const unsigned char*)"this\" is not a string\"", &error_pointer, &hooks));
+    TEST_ASSERT_NULL(parse_string(item, (const unsigned char*) "", &error_pointer, &hooks));
 }
 
 static void parse_string_should_not_parse_invalid_backslash(void)
 {
-    TEST_ASSERT_NULL_MESSAGE(parse_string(item, (const unsigned char*)"Abcdef\\123", &error_pointer), "Invalid backshlash should not be accepted.");
-    TEST_ASSERT_NULL_MESSAGE(parse_string(item, (const unsigned char*)"Abcdef\\e23", &error_pointer), "Invalid backshlash should not be accepted.");
+    TEST_ASSERT_NULL_MESSAGE(parse_string(item, (const unsigned char*)"Abcdef\\123", &error_pointer, &hooks), "Invalid backshlash should not be accepted.");
+    TEST_ASSERT_NULL_MESSAGE(parse_string(item, (const unsigned char*)"Abcdef\\e23", &error_pointer, &hooks), "Invalid backshlash should not be accepted.");
 }
 
 static void parse_string_should_not_overflow_with_closing_backslash(void)
 {
-    TEST_ASSERT_NULL_MESSAGE(parse_string(item, (const unsigned char*)"\"000000000000000000\\", &error_pointer), "Malformed string should not be accepted.");
+    TEST_ASSERT_NULL_MESSAGE(parse_string(item, (const unsigned char*)"\"000000000000000000\\", &error_pointer, &hooks), "Malformed string should not be accepted.");
 }
 
 static void parse_string_should_parse_bug_94(void)
