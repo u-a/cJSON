@@ -10,7 +10,7 @@ int main(void)
     char *patchtext = NULL;
     char *patchedtext = NULL;
 
-    int i = 0;
+    size_t i = 0;
     /* JSON Pointer tests: */
     cJSON *root = NULL;
     const char *json=
@@ -87,7 +87,7 @@ int main(void)
     for (i = 0; i < 12; i++)
     {
         char *output = cJSON_Print(cJSONUtils_GetPointer(root, tests[i]));
-        printf("Test %d:\n%s\n\n", i + 1, output);
+        printf("Test %lu:\n%s\n\n", (unsigned long)i + 1, output);
         free(output);
     }
     cJSON_Delete(root);
@@ -100,7 +100,7 @@ int main(void)
         cJSON *patch = cJSON_Parse(patches[i][1]);
         int err = cJSONUtils_ApplyPatches(object_to_be_patched, patch);
         char *output = cJSON_Print(object_to_be_patched);
-        printf("Test %d (err %d):\n%s\n\n", i + 1, err, output);
+        printf("Test %lu (err %d):\n%s\n\n", (unsigned long)i + 1, err, output);
 
         free(output);
         cJSON_Delete(object_to_be_patched);
@@ -109,7 +109,7 @@ int main(void)
 
     /* JSON Generate Patch tests: */
     printf("JSON Generate Patch Tests\n");
-    for (i = 0; i < 15; i++)
+    for (i = 0; i < 15;i++)
     {
         cJSON *from;
         cJSON *to;
@@ -123,7 +123,7 @@ int main(void)
         to = cJSON_Parse(patches[i][2]);
         patch = cJSONUtils_GeneratePatches(from, to);
         out = cJSON_Print(patch);
-        printf("Test %d: (patch: %s):\n%s\n\n", i + 1, patches[i][1], out);
+        printf("Test %lu: (patch: %s):\n%s\n\n", (unsigned long)i + 1, patches[i][1], out);
 
         free(out);
         cJSON_Delete(from);

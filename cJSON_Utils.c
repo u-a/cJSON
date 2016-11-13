@@ -185,7 +185,7 @@ cJSON *cJSONUtils_GetPointer(cJSON *object, const char *pointer)
             {
                 return NULL;
             }
-            object = cJSON_GetArrayItem(object, (int)which);
+            object = cJSON_GetArrayItem(object, which);
         }
         else if ((object->type & 0xFF) == cJSON_Object)
         {
@@ -263,7 +263,7 @@ static cJSON *cJSONUtils_PatchDetach(cJSON *object, const unsigned char *path)
     }
     else if ((parent->type & 0xFF) == cJSON_Array)
     {
-        ret = cJSON_DetachItemFromArray(parent, atoi((char*)childptr));
+        ret = cJSON_DetachItemFromArray(parent, (size_t)atol((char*)childptr));
     }
     else if ((parent->type & 0xFF) == cJSON_Object)
     {
@@ -474,7 +474,7 @@ static int cJSONUtils_ApplyPatch(cJSON *object, cJSON *patch)
         }
         else
         {
-            cJSON_InsertItemInArray(parent, atoi((char*)childptr), value);
+            cJSON_InsertItemInArray(parent, (size_t)atol((char*)childptr), value);
         }
     }
     else if ((parent->type & 0xFF) == cJSON_Object)

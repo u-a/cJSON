@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stddef.h>
 #include "cJSON.h"
 
 /* Used by some code below as an example datatype. */
@@ -72,7 +73,7 @@ static int print_preallocated(cJSON *root)
     }
 
     /* Print to buffer */
-    if (!cJSON_PrintPreallocated(root, buf, (int)len, 1)) {
+    if (!cJSON_PrintPreallocated(root, buf, len, 1)) {
         printf("cJSON_PrintPreallocated failed!\n");
         if (strcmp(out, buf) != 0) {
             printf("cJSON_PrintPreallocated not the same as cJSON_Print!\n");
@@ -89,7 +90,7 @@ static int print_preallocated(cJSON *root)
     printf("%s\n", buf);
 
     /* force it to fail */
-    if (cJSON_PrintPreallocated(root, buf_fail, (int)len_fail, 1)) {
+    if (cJSON_PrintPreallocated(root, buf_fail, len_fail, 1)) {
         printf("cJSON_PrintPreallocated failed to show error with insufficient memory!\n");
         printf("cJSON_Print result:\n%s\n", out);
         printf("cJSON_PrintPreallocated result:\n%s\n", buf_fail);
