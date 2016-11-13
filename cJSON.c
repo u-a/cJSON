@@ -52,28 +52,6 @@ extern const char* cJSON_Version(void)
     return version;
 }
 
-/* case insensitive strcmp */
-static int cJSON_strcasecmp(const unsigned char *s1, const unsigned char *s2)
-{
-    if (!s1)
-    {
-        return (s1 == s2) ? 0 : 1; /* both NULL? */
-    }
-    if (!s2)
-    {
-        return 1;
-    }
-    for(; tolower(*s1) == tolower(*s2); ++s1, ++s2)
-    {
-        if (*s1 == '\0')
-        {
-            return 0;
-        }
-    }
-
-    return tolower(*s1) - tolower(*s2);
-}
-
 static cJSON_Hooks global_hooks = { malloc, free };
 
 static unsigned char* cJSON_strdup(const unsigned char* str, const cJSON_Hooks * const hooks)
@@ -1658,7 +1636,7 @@ cJSON *cJSON_GetArrayItem(const cJSON *array, size_t item)
 cJSON *cJSON_GetObjectItem(const cJSON *object, const char *string)
 {
     cJSON *c = object ? object->child : NULL;
-    while (c && cJSON_strcasecmp((unsigned char*)c->string, (const unsigned char*)string))
+    while (c && strcmp(c->string, string))
     {
         c = c->next;
     }
@@ -1813,7 +1791,7 @@ cJSON *cJSON_DetachItemFromObject(cJSON *object, const char *string)
 {
     size_t i = 0;
     cJSON *c = object->child;
-    while (c && cJSON_strcasecmp((unsigned char*)c->string, (const unsigned char*)string))
+    while (c && strcmp(c->string, string))
     {
         i++;
         c = c->next;
@@ -1900,7 +1878,7 @@ static void internal_cJSON_ReplaceItemInObject(cJSON *object, const char *string
 {
     size_t i = 0;
     cJSON *c = object->child;
-    while(c && cJSON_strcasecmp((unsigned char*)c->string, (const unsigned char*)string))
+    while(c && strcmp(c->string, string))
     {
         i++;
         c = c->next;

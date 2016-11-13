@@ -21,29 +21,8 @@ static unsigned char* cJSONUtils_strdup(const unsigned char* str)
     return copy;
 }
 
-static int cJSONUtils_strcasecmp(const unsigned char *s1, const unsigned char *s2)
-{
-    if (!s1)
-    {
-        return (s1 == s2) ? 0 : 1; /* both NULL? */
-    }
-    if (!s2)
-    {
-        return 1;
-    }
-    for(; tolower(*s1) == tolower(*s2); ++s1, ++s2)
-    {
-        if(*s1 == 0)
-        {
-            return 0;
-        }
-    }
-
-    return tolower(*s1) - tolower(*s2);
-}
-
 /* JSON Pointer implementation: */
-static int cJSONUtils_Pstrcasecmp(const unsigned char *a, const unsigned char *e)
+static int cJSONUtils_Pstrcmp(const unsigned char *a, const unsigned char *e)
 {
     if (!a || !e)
     {
@@ -64,7 +43,7 @@ static int cJSONUtils_Pstrcasecmp(const unsigned char *a, const unsigned char *e
                 e++;
             }
         }
-        else if (tolower(*a) != tolower(*e))
+        else if (*a != *e)
         {
             return 1;
         }
@@ -191,7 +170,7 @@ cJSON *cJSONUtils_GetPointer(cJSON *object, const char *pointer)
         {
             object = object->child;
             /* GetObjectItem. */
-            while (object && cJSONUtils_Pstrcasecmp((unsigned char*)object->string, (const unsigned char*)pointer))
+            while (object && cJSONUtils_Pstrcmp((unsigned char*)object->string, (const unsigned char*)pointer))
             {
                 object = object->next;
             }
@@ -310,7 +289,7 @@ static int cJSONUtils_Compare(cJSON *a, cJSON *b)
             {
                 int err = 0;
                 /* compare object keys */
-                if (cJSONUtils_strcasecmp((unsigned char*)a->string, (unsigned char*)b->string))
+                if (strcmp(a->string, b->string))
                 {
                     /* missing member */
                     return -6;
@@ -614,7 +593,7 @@ static void cJSONUtils_CompareToPatch(cJSON *patches, const unsigned char *path,
             /* for all object values in the object with more of them */
             while (a || b)
             {
-                int diff = (!a) ? 1 : ((!b) ? -1 : cJSONUtils_strcasecmp((unsigned char*)a->string, (unsigned char*)b->string));
+                int diff = (!a) ? 1 : ((!b) ? -1 : strcmp(a->string, b->string));
                 if (!diff)
                 {
                     /* both object keys are the same */
@@ -668,7 +647,7 @@ static cJSON *cJSONUtils_SortList(cJSON *list)
         return list;
     }
 
-    while (ptr && ptr->next && (cJSONUtils_strcasecmp((unsigned char*)ptr->string, (unsigned char*)ptr->next->string) < 0))
+    while (ptr && ptr->next && (strcmp(ptr->string, ptr->next->string) < 0))
     {
         /* Test for list sorted. */
         ptr = ptr->next;
@@ -705,7 +684,7 @@ static cJSON *cJSONUtils_SortList(cJSON *list)
 
     while (first && second) /* Merge the sub-lists */
     {
-        if (cJSONUtils_strcasecmp((unsigned char*)first->string, (unsigned char*)second->string) < 0)
+        if (strcmp(first->string, second->string) < 0)
         {
             if (!list)
             {
