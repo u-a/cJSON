@@ -148,42 +148,11 @@ static const unsigned char *parse_number(cJSON *item, const unsigned char *num)
 
     item->valuedouble = number;
 
-    /* use saturation in case of overflow */
-    if (number >= INT_MAX)
-    {
-        item->valueint = INT_MAX;
-    }
-    else if (number <= INT_MIN)
-    {
-        item->valueint = INT_MIN;
-    }
-    else
-    {
-        item->valueint = (int)number;
-    }
     item->type = cJSON_Number;
 
     return endpointer;
 }
 
-/* don't ask me, but the original cJSON_SetNumberValue returns an integer or double */
-double cJSON_SetNumberHelper(cJSON *object, double number)
-{
-    if (number >= INT_MAX)
-    {
-        object->valueint = INT_MAX;
-    }
-    else if (number <= INT_MIN)
-    {
-        object->valueint = INT_MIN;
-    }
-    else
-    {
-        object->valueint = cJSON_Number;
-    }
-
-    return object->valuedouble = number;
-}
 
 typedef struct
 {
@@ -276,8 +245,9 @@ static unsigned char *print_number(const cJSON *item, printbuffer *p, const cJSO
         }
     }
     /* value is an int */
-    else if ((fabs(((double)item->valueint) - d) <= DBL_EPSILON) && (d <= INT_MAX) && (d >= INT_MIN))
+    else if ((fabs(floor(item->valuedouble) - d) <= DBL_EPSILON) && (d <= INT_MAX) && (d >= INT_MIN))
     {
+        int value = (int)item->valuedouble;
         if (p)
         {
             str = ensure(p, 21, hooks);
@@ -289,7 +259,7 @@ static unsigned char *print_number(const cJSON *item, printbuffer *p, const cJSO
         }
         if (str)
         {
-            sprintf((char*)str, "%d", item->valueint);
+            sprintf((char*)str, "%d", value);
         }
     }
     /* value is a floating point number */
@@ -846,7 +816,6 @@ static const unsigned char *parse_value(cJSON *item, const unsigned char *value,
     if (!strncmp((const char*)value, "true", 4))
     {
         item->type = cJSON_True;
-        item->valueint = 1;
         return value + 4;
     }
     if (*value == '\"')
@@ -1968,20 +1937,6 @@ static cJSON *internal_cJSON_CreateNumber(double num, const cJSON_Hooks * const 
     {
         item->type = cJSON_Number;
         item->valuedouble = num;
-
-        /* use saturation in case of overflow */
-        if (num >= INT_MAX)
-        {
-            item->valueint = INT_MAX;
-        }
-        else if (num <= INT_MIN)
-        {
-            item->valueint = INT_MIN;
-        }
-        else
-        {
-            item->valueint = (int)num;
-        }
     }
 
     return item;
@@ -2224,7 +2179,6 @@ static cJSON *internal_cJSON_Duplicate(const cJSON *item, cjbool recurse, const 
     }
     /* Copy over all vars */
     newitem->type = item->type & (~cJSON_IsReference);
-    newitem->valueint = item->valueint;
     newitem->valuedouble = item->valuedouble;
     if (item->valuestring)
     {

@@ -66,8 +66,6 @@ typedef struct cJSON
     /* The item's string, if type==cJSON_String  and type == cJSON_Raw */
     char *valuestring;
     /* The item's number, if type==cJSON_Number */
-    int valueint;
-    /* The item's number, if type==cJSON_Number */
     double valuedouble;
 
     /* The item's name string, if this item is the child of, or is in the list of subitems of an object. */
@@ -167,12 +165,6 @@ extern void cJSON_Minify(char *json);
 #define cJSON_AddNumberToObject(object,name,n) cJSON_AddItemToObject(object, name, cJSON_CreateNumber(n))
 #define cJSON_AddStringToObject(object,name,s) cJSON_AddItemToObject(object, name, cJSON_CreateString(s))
 #define cJSON_AddRawToObject(object,name,s) cJSON_AddItemToObject(object, name, cJSON_CreateRaw(s))
-
-/* When assigning an integer value, it needs to be propagated to valuedouble too. */
-#define cJSON_SetIntValue(object, number) ((object) ? (object)->valueint = (object)->valuedouble = (number) : (number))
-/* helper for the cJSON_SetNumberValue macro */
-extern double cJSON_SetNumberHelper(cJSON *object, double number);
-#define cJSON_SetNumberValue(object, number) ((object) ? cJSON_SetNumberHelper(object, (double)number) : (number))
 
 /* Macro for iterating over an array */
 #define cJSON_ArrayForEach(pos, head) for(pos = (head)->child; pos != NULL; pos = pos->next)
