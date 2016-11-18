@@ -44,7 +44,7 @@ static void assert_is_array(cJSON *string_item)
     TEST_ASSERT_BITS_MESSAGE(cJSON_IsReference, 0, string_item->type, "Item should not have a string as reference.");
     TEST_ASSERT_BITS_MESSAGE(cJSON_StringIsConst, 0, string_item->type, "Item should not have a const string.");
     TEST_ASSERT_NULL_MESSAGE(string_item->valuestring, "Valuestring is not NULL.");
-    TEST_ASSERT_NULL_MESSAGE(string_item->string, "String is not NULL.");
+    TEST_ASSERT_NULL_MESSAGE(string_item->name, "Name is not NULL.");
 }
 
 static void assert_not_array(const char *json)

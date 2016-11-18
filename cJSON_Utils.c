@@ -123,9 +123,9 @@ char *cJSONUtils_FindPointerFromObjectTo(cJSON *object, cJSON *target)
             }
             else if ((type & 0xFF) == cJSON_Object)
             {
-                unsigned char *ret = (unsigned char*)malloc(strlen((char*)found) + cJSONUtils_PointerEncodedstrlen((unsigned char*)obj->string) + 2);
+                unsigned char *ret = (unsigned char*)malloc(strlen((char*)found) + cJSONUtils_PointerEncodedstrlen((unsigned char*)obj->name) + 2);
                 *ret = '/';
-                cJSONUtils_PointerEncodedstrcpy(ret + 1, (unsigned char*)obj->string);
+                cJSONUtils_PointerEncodedstrcpy(ret + 1, (unsigned char*)obj->name);
                 strcat((char*)ret, (char*)found);
                 free(found);
 
@@ -170,7 +170,7 @@ cJSON *cJSONUtils_GetPointer(cJSON *object, const char *pointer)
         {
             object = object->child;
             /* GetObjectItem. */
-            while (object && cJSONUtils_Pstrcmp((unsigned char*)object->string, (const unsigned char*)pointer))
+            while (object && cJSONUtils_Pstrcmp((unsigned char*)object->name, (const unsigned char*)pointer))
             {
                 object = object->next;
             }
@@ -289,7 +289,7 @@ static int cJSONUtils_Compare(cJSON *a, cJSON *b)
             {
                 int err = 0;
                 /* compare object keys */
-                if (strcmp(a->string, b->string))
+                if (strcmp(a->name, b->name))
                 {
                     /* missing member */
                     return -6;
@@ -593,12 +593,12 @@ static void cJSONUtils_CompareToPatch(cJSON *patches, const unsigned char *path,
             /* for all object values in the object with more of them */
             while (a || b)
             {
-                int diff = (!a) ? 1 : ((!b) ? -1 : strcmp(a->string, b->string));
+                int diff = (!a) ? 1 : ((!b) ? -1 : strcmp(a->name, b->name));
                 if (!diff)
                 {
                     /* both object keys are the same */
-                    unsigned char *newpath = (unsigned char*)malloc(strlen((const char*)path) + cJSONUtils_PointerEncodedstrlen((unsigned char*)a->string) + 2);
-                    cJSONUtils_PointerEncodedstrcpy(newpath + sprintf((char*)newpath, "%s/", path), (unsigned char*)a->string);
+                    unsigned char *newpath = (unsigned char*)malloc(strlen((const char*)path) + cJSONUtils_PointerEncodedstrlen((unsigned char*)a->name) + 2);
+                    cJSONUtils_PointerEncodedstrcpy(newpath + sprintf((char*)newpath, "%s/", path), (unsigned char*)a->name);
                     /* create a patch for the element */
                     cJSONUtils_CompareToPatch(patches, newpath, a, b);
                     free(newpath);
@@ -608,13 +608,13 @@ static void cJSONUtils_CompareToPatch(cJSON *patches, const unsigned char *path,
                 else if (diff < 0)
                 {
                     /* object element doesn't exist in 'to' --> remove it */
-                    cJSONUtils_GeneratePatch(patches, (const unsigned char*)"remove", path, (unsigned char*)a->string, 0);
+                    cJSONUtils_GeneratePatch(patches, (const unsigned char*)"remove", path, (unsigned char*)a->name, 0);
                     a = a->next;
                 }
                 else
                 {
                     /* object element doesn't exist in 'from' --> add it */
-                    cJSONUtils_GeneratePatch(patches, (const unsigned char*)"add", path, (unsigned char*)b->string, b);
+                    cJSONUtils_GeneratePatch(patches, (const unsigned char*)"add", path, (unsigned char*)b->name, b);
                     b = b->next;
                 }
             }
@@ -647,7 +647,7 @@ static cJSON *cJSONUtils_SortList(cJSON *list)
         return list;
     }
 
-    while (ptr && ptr->next && (strcmp(ptr->string, ptr->next->string) < 0))
+    while (ptr && ptr->next && (strcmp(ptr->name, ptr->next->name) < 0))
     {
         /* Test for list sorted. */
         ptr = ptr->next;
@@ -684,7 +684,7 @@ static cJSON *cJSONUtils_SortList(cJSON *list)
 
     while (first && second) /* Merge the sub-lists */
     {
-        if (strcmp(first->string, second->string) < 0)
+        if (strcmp(first->name, second->name) < 0)
         {
             if (!list)
             {
@@ -767,12 +767,12 @@ cJSON* cJSONUtils_MergePatch(cJSON *target, cJSON *patch)
         if ((patch->type & 0xFF) == cJSON_NULL)
         {
             /* NULL is the indicator to remove a value, see RFC7396 */
-            cJSON_DeleteItemFromObject(target, patch->string);
+            cJSON_DeleteItemFromObject(target, patch->name);
         }
         else
         {
-            cJSON *replaceme = cJSON_DetachItemFromObject(target, patch->string);
-            cJSON_AddItemToObject(target, patch->string, cJSONUtils_MergePatch(replaceme, patch));
+            cJSON *replaceme = cJSON_DetachItemFromObject(target, patch->name);
+            cJSON_AddItemToObject(target, patch->name, cJSONUtils_MergePatch(replaceme, patch));
         }
         patch = patch->next;
     }
@@ -800,17 +800,17 @@ cJSON *cJSONUtils_GenerateMergePatch(cJSON *from, cJSON *to)
     patch = cJSON_CreateObject();
     while (from || to)
     {
-        int compare = from ? (to ? strcmp(from->string, to->string) : -1) : 1;
+        int compare = from ? (to ? strcmp(from->name, to->name) : -1) : 1;
         if (compare < 0)
         {
             /* from has a value that to doesn't have -> remove */
-            cJSON_AddItemToObject(patch, from->string, cJSON_CreateNull());
+            cJSON_AddItemToObject(patch, from->name, cJSON_CreateNull());
             from = from->next;
         }
         else if (compare > 0)
         {
             /* to has a value that from doesn't have -> add to patch */
-            cJSON_AddItemToObject(patch, to->string, cJSON_Duplicate(to, 1));
+            cJSON_AddItemToObject(patch, to->name, cJSON_Duplicate(to, 1));
             to = to->next;
         }
         else
@@ -819,7 +819,7 @@ cJSON *cJSONUtils_GenerateMergePatch(cJSON *from, cJSON *to)
             if (cJSONUtils_Compare(from, to))
             {
                 /* not identical --> generate a patch */
-                cJSON_AddItemToObject(patch, to->string, cJSONUtils_GenerateMergePatch(from, to));
+                cJSON_AddItemToObject(patch, to->name, cJSONUtils_GenerateMergePatch(from, to));
             }
             /* next key in the object */
             from = from->next;

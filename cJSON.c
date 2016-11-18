@@ -115,9 +115,9 @@ static void internal_cJSON_Delete(cJSON *c, const cJSON_Hooks * const hooks)
         {
             hooks->free_fn(c->valuestring);
         }
-        if (!(c->type & cJSON_StringIsConst) && c->string)
+        if (!(c->type & cJSON_StringIsConst) && c->name)
         {
-            hooks->free_fn(c->string);
+            hooks->free_fn(c->name);
         }
         hooks->free_fn(c);
         c = next;
@@ -1223,8 +1223,8 @@ static const unsigned char *parse_object(cJSON *item, const unsigned char *value
     {
         goto fail;
     }
-    /* use string as key, not value */
-    child->string = child->valuestring;
+    /* use parsed string as key, not value */
+    child->name = child->valuestring;
     child->valuestring = NULL;
 
     if (*value != ':')
@@ -1259,8 +1259,8 @@ static const unsigned char *parse_object(cJSON *item, const unsigned char *value
             goto fail;
         }
 
-        /* use string as key, not value */
-        child->string = child->valuestring;
+        /* use parsed string as key, not value */
+        child->name = child->valuestring;
         child->valuestring = NULL;
 
         if (*value != ':')
@@ -1387,7 +1387,7 @@ static unsigned char *print_object(const cJSON *item, size_t depth, cjbool fmt, 
             }
 
             /* print key */
-            if (!print_string_ptr((unsigned char*)child->string, p, hooks))
+            if (!print_string_ptr((unsigned char*)child->name, p, hooks))
             {
                 return NULL;
             }
@@ -1477,7 +1477,7 @@ static unsigned char *print_object(const cJSON *item, size_t depth, cjbool fmt, 
         }
         while (child && !fail)
         {
-            names[i] = str = print_string_ptr((unsigned char*)child->string, 0, hooks); /* print key */
+            names[i] = str = print_string_ptr((unsigned char*)child->name, 0, hooks); /* print key */
             entries[i++] = ret = print_value(child, depth, fmt, 0, hooks);
             if (str && ret)
             {
@@ -1602,19 +1602,19 @@ cJSON *cJSON_GetArrayItem(const cJSON *array, size_t item)
     return c;
 }
 
-cJSON *cJSON_GetObjectItem(const cJSON *object, const char *string)
+cJSON *cJSON_GetObjectItem(const cJSON *object, const char *name)
 {
     cJSON *c = object ? object->child : NULL;
-    while (c && strcmp(c->string, string))
+    while (c && strcmp(c->name, name))
     {
         c = c->next;
     }
     return c;
 }
 
-cjbool cJSON_HasObjectItem(const cJSON *object, const char *string)
+cjbool cJSON_HasObjectItem(const cJSON *object, const char *name)
 {
-    return cJSON_GetObjectItem(object, string) ? 1 : 0;
+    return cJSON_GetObjectItem(object, name) ? 1 : 0;
 }
 
 /* Utility for array list handling. */
@@ -1633,7 +1633,7 @@ static cJSON *create_reference(const cJSON *item, const cJSON_Hooks * const hook
         return NULL;
     }
     memcpy(ref, item, sizeof(cJSON));
-    ref->string = NULL;
+    ref->name = NULL;
     ref->type |= cJSON_IsReference;
     ref->next = ref->prev = NULL;
     return ref;
@@ -1667,7 +1667,7 @@ void cJSON_AddItemToArray(cJSON *array, cJSON *item)
     }
 }
 
-void   cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item)
+void   cJSON_AddItemToObject(cJSON *object, const char *name, cJSON *item)
 {
     const cJSON_Hooks * const hooks = &global_hooks;
     if (!item)
@@ -1676,30 +1676,30 @@ void   cJSON_AddItemToObject(cJSON *object, const char *string, cJSON *item)
     }
 
     /* free old key and set new one */
-    if (item->string)
+    if (item->name)
     {
-        hooks->free_fn(item->string);
+        hooks->free_fn(item->name);
     }
-    item->string = (char*)cJSON_strdup((const unsigned char*)string, hooks);
+    item->name = (char*)cJSON_strdup((const unsigned char*)name, hooks);
 
     cJSON_AddItemToArray(object,item);
 }
 
 /* Add an item to an object with constant string as key */
-void   cJSON_AddItemToObjectCS(cJSON *object, const char *string, cJSON *item)
+void   cJSON_AddItemToObjectCS(cJSON *object, const char *name, cJSON *item)
 {
     const cJSON_Hooks * const hooks = &global_hooks;
     if (!item)
     {
         return;
     }
-    if (!(item->type & cJSON_StringIsConst) && item->string)
+    if (!(item->type & cJSON_StringIsConst) && item->name)
     {
-        hooks->free_fn(item->string);
+        hooks->free_fn(item->name);
     }
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-qual"
-    item->string = (char*)string;
+    item->name = (char*)name;
 #pragma GCC diagnostic pop
     item->type |= cJSON_StringIsConst;
     cJSON_AddItemToArray(object, item);
@@ -1710,9 +1710,9 @@ void cJSON_AddItemReferenceToArray(cJSON *array, cJSON *item)
     cJSON_AddItemToArray(array, create_reference(item, &global_hooks));
 }
 
-void cJSON_AddItemReferenceToObject(cJSON *object, const char *string, cJSON *item)
+void cJSON_AddItemReferenceToObject(cJSON *object, const char *name, cJSON *item)
 {
-    cJSON_AddItemToObject(object, string, create_reference(item, &global_hooks));
+    cJSON_AddItemToObject(object, name, create_reference(item, &global_hooks));
 }
 
 cJSON *cJSON_DetachItemFromArray(cJSON *array, size_t which)
@@ -1756,11 +1756,11 @@ void cJSON_DeleteItemFromArray(cJSON * array, size_t which)
     internal_cJSON_DeleteItemFromArray(array, which, &global_hooks);
 }
 
-cJSON *cJSON_DetachItemFromObject(cJSON *object, const char *string)
+cJSON *cJSON_DetachItemFromObject(cJSON *object, const char *name)
 {
     size_t i = 0;
     cJSON *c = object->child;
-    while (c && strcmp(c->string, string))
+    while (c && strcmp(c->name, name))
     {
         i++;
         c = c->next;
@@ -1773,13 +1773,13 @@ cJSON *cJSON_DetachItemFromObject(cJSON *object, const char *string)
     return NULL;
 }
 
-static void internal_cJSON_DeleteItemFromObject(cJSON *object, const char *string, const cJSON_Hooks * const hooks)
+static void internal_cJSON_DeleteItemFromObject(cJSON *object, const char *name, const cJSON_Hooks * const hooks)
 {
-    internal_cJSON_Delete(cJSON_DetachItemFromObject(object, string), hooks);
+    internal_cJSON_Delete(cJSON_DetachItemFromObject(object, name), hooks);
 }
-void cJSON_DeleteItemFromObject(cJSON *object, const char * string)
+void cJSON_DeleteItemFromObject(cJSON *object, const char *name)
 {
-    internal_cJSON_DeleteItemFromObject(object, string, &global_hooks);
+    internal_cJSON_DeleteItemFromObject(object, name, &global_hooks);
 }
 
 /* Replace array/object items with new ones. */
@@ -1843,30 +1843,30 @@ void cJSON_ReplaceItemInArray(cJSON *array, size_t which, cJSON *newitem)
     internal_cJSON_ReplaceItemInArray(array, which, newitem, &global_hooks);
 }
 
-static void internal_cJSON_ReplaceItemInObject(cJSON *object, const char *string, cJSON *newitem, const cJSON_Hooks * const hooks)
+static void internal_cJSON_ReplaceItemInObject(cJSON *object, const char *name, cJSON *newitem, const cJSON_Hooks * const hooks)
 {
     size_t i = 0;
     cJSON *c = object->child;
-    while(c && strcmp(c->string, string))
+    while(c && strcmp(c->name, name))
     {
         i++;
         c = c->next;
     }
     if(c)
     {
-        /* free the old string if not const */
-        if (!(newitem->type & cJSON_StringIsConst) && newitem->string)
+        /* free the old name if not const */
+        if (!(newitem->type & cJSON_StringIsConst) && newitem->name)
         {
-             hooks->free_fn(newitem->string);
+             hooks->free_fn(newitem->name);
         }
 
-        newitem->string = (char*)cJSON_strdup((const unsigned char*)string, hooks);
+        newitem->name = (char*)cJSON_strdup((const unsigned char*)name, hooks);
         internal_cJSON_ReplaceItemInArray(object, i, newitem, hooks);
     }
 }
-void cJSON_ReplaceItemInObject(cJSON *object, const char *string, cJSON *newitem)
+void cJSON_ReplaceItemInObject(cJSON *object, const char *name, cJSON *newitem)
 {
-    internal_cJSON_ReplaceItemInObject(object, string, newitem, &global_hooks);
+    internal_cJSON_ReplaceItemInObject(object, name, newitem, &global_hooks);
 }
 
 /* Create basic types: */
@@ -2188,10 +2188,10 @@ static cJSON *internal_cJSON_Duplicate(const cJSON *item, cjbool recurse, const 
             goto fail;
         }
     }
-    if (item->string)
+    if (item->name)
     {
-        newitem->string = (item->type&cJSON_StringIsConst) ? item->string : (char*)cJSON_strdup((unsigned char*)item->string, hooks);
-        if (!newitem->string)
+        newitem->name = (item->type&cJSON_StringIsConst) ? item->name : (char*)cJSON_strdup((unsigned char*)item->name, hooks);
+        if (!newitem->name)
         {
             goto fail;
         }

@@ -41,7 +41,7 @@ static void assert_is_value(cJSON *value_item, int type)
     TEST_ASSERT_BITS_MESSAGE(0xFF, type, value_item->type, "Message type is not number.");
     TEST_ASSERT_BITS_MESSAGE(cJSON_IsReference, 0, value_item->type, "Item should not have a string as reference.");
     TEST_ASSERT_BITS_MESSAGE(cJSON_StringIsConst, 0, value_item->type, "Item should not have a const string.");
-    TEST_ASSERT_NULL_MESSAGE(value_item->string, "String is not NULL.");
+    TEST_ASSERT_NULL_MESSAGE(value_item->name, "Name is not NULL.");
 }
 
 static void assert_parse_value(const char *string, int type)
