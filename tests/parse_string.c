@@ -43,7 +43,7 @@ static void assert_is_string(cJSON *string_item)
     TEST_ASSERT_BITS_MESSAGE(0xFF, cJSON_String, string_item->type, "Item type is not string.");
     TEST_ASSERT_BITS_MESSAGE(cJSON_IsReference, 1, string_item->type, "Item should have a string as reference.");
     TEST_ASSERT_BITS_MESSAGE(cJSON_StringIsConst, 0, string_item->type, "Item should not have a const string.");
-    TEST_ASSERT_NOT_NULL_MESSAGE(string_item->valuestring, "Valuestring is NULL.");
+    TEST_ASSERT_NOT_NULL_MESSAGE(string_item->string, "string is NULL.");
     TEST_ASSERT_NULL_MESSAGE(string_item->name, "Name is not NULL.");
 }
 
@@ -51,9 +51,9 @@ static void assert_parse_string(const char *string, const char *expected)
 {
     TEST_ASSERT_NOT_NULL_MESSAGE(parse_string(item, (const unsigned char*)string, &error_pointer, &hooks), "Couldn't parse string.");
     assert_is_string(item);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE(expected, item->valuestring, "The parsed result isn't as expected.");
-    hooks.free_fn(item->valuestring);
-    item->valuestring = NULL;
+    TEST_ASSERT_EQUAL_STRING_MESSAGE(expected, item->string, "The parsed result isn't as expected.");
+    hooks.free_fn(item->string);
+    item->string = NULL;
 }
 
 static void parse_string_should_parse_strings(void)

@@ -111,9 +111,9 @@ static void internal_cJSON_Delete(cJSON *c, const cJSON_Hooks * const hooks)
         {
             internal_cJSON_Delete(c->child, hooks);
         }
-        if (!(c->type & cJSON_IsReference) && c->valuestring)
+        if (!(c->type & cJSON_IsReference) && c->string)
         {
-            hooks->free_fn(c->valuestring);
+            hooks->free_fn(c->string);
         }
         if (!(c->type & cJSON_StringIsConst) && c->name)
         {
@@ -385,7 +385,7 @@ static const unsigned char *parse_string(cJSON *item, const unsigned char *str, 
     {
         goto fail;
     }
-    item->valuestring = (char*)out; /* assign here so out will be deleted during internal_cJSON_Delete() later */
+    item->string = (char*)out; /* assign here so out will be deleted during internal_cJSON_Delete() later */
     item->type = cJSON_String;
 
     ptr = str + 1;
@@ -685,7 +685,7 @@ static unsigned char *print_string_ptr(const unsigned char *str, printbuffer *p,
 /* Invoke print_string_ptr (which is useful) on an item. */
 static unsigned char *print_string(const cJSON *item, printbuffer *p, const cJSON_Hooks * const hooks)
 {
-    return print_string_ptr((unsigned char*)item->valuestring, p, hooks);
+    return print_string_ptr((unsigned char*)item->string, p, hooks);
 }
 
 /* Predeclare these prototypes. */
@@ -880,7 +880,7 @@ static unsigned char *print_value(const cJSON *item, size_t depth, cjbool fmt, p
             case cJSON_Raw:
             {
                 size_t raw_length = 0;
-                if (item->valuestring == NULL)
+                if (item->string == NULL)
                 {
                     if (!p->noalloc)
                     {
@@ -890,11 +890,11 @@ static unsigned char *print_value(const cJSON *item, size_t depth, cjbool fmt, p
                     break;
                 }
 
-                raw_length = strlen(item->valuestring) + sizeof('\0');
+                raw_length = strlen(item->string) + sizeof('\0');
                 out = ensure(p, raw_length, hooks);
                 if (out)
                 {
-                    memcpy(out, item->valuestring, raw_length);
+                    memcpy(out, item->string, raw_length);
                 }
                 break;
             }
@@ -929,7 +929,7 @@ static unsigned char *print_value(const cJSON *item, size_t depth, cjbool fmt, p
                 out = print_number(item, 0, hooks);
                 break;
             case cJSON_Raw:
-                out = cJSON_strdup((unsigned char*)item->valuestring, hooks);
+                out = cJSON_strdup((unsigned char*)item->string, hooks);
                 break;
             case cJSON_String:
                 out = print_string(item, 0, hooks);
@@ -1224,8 +1224,8 @@ static const unsigned char *parse_object(cJSON *item, const unsigned char *value
         goto fail;
     }
     /* use parsed string as key, not value */
-    child->name = child->valuestring;
-    child->valuestring = NULL;
+    child->name = child->string;
+    child->string = NULL;
 
     if (*value != ':')
     {
@@ -1260,8 +1260,8 @@ static const unsigned char *parse_object(cJSON *item, const unsigned char *value
         }
 
         /* use parsed string as key, not value */
-        child->name = child->valuestring;
-        child->valuestring = NULL;
+        child->name = child->string;
+        child->string = NULL;
 
         if (*value != ':')
         {
@@ -1952,8 +1952,8 @@ static cJSON *internal_cJSON_CreateString(const char *string, const cJSON_Hooks 
     if(item)
     {
         item->type = cJSON_String;
-        item->valuestring = (char*)cJSON_strdup((const unsigned char*)string, hooks);
-        if(!item->valuestring)
+        item->string = (char*)cJSON_strdup((const unsigned char*)string, hooks);
+        if(!item->string)
         {
             internal_cJSON_Delete(item, hooks);
             return NULL;
@@ -1973,8 +1973,8 @@ static cJSON *internal_cJSON_CreateRaw(const char *raw, const cJSON_Hooks * cons
     if(item)
     {
         item->type = cJSON_Raw;
-        item->valuestring = (char*)cJSON_strdup((const unsigned char*)raw, hooks);
-        if(!item->valuestring)
+        item->string = (char*)cJSON_strdup((const unsigned char*)raw, hooks);
+        if(!item->string)
         {
             internal_cJSON_Delete(item, hooks);
             return NULL;
@@ -2180,10 +2180,10 @@ static cJSON *internal_cJSON_Duplicate(const cJSON *item, cjbool recurse, const 
     /* Copy over all vars */
     newitem->type = item->type & (~cJSON_IsReference);
     newitem->valuedouble = item->valuedouble;
-    if (item->valuestring)
+    if (item->string)
     {
-        newitem->valuestring = (char*)cJSON_strdup((unsigned char*)item->valuestring, hooks);
-        if (!newitem->valuestring)
+        newitem->string = (char*)cJSON_strdup((unsigned char*)item->string, hooks);
+        if (!newitem->string)
         {
             goto fail;
         }

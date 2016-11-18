@@ -40,7 +40,7 @@ static void assert_is_number(cJSON *number_item)
     TEST_ASSERT_BITS_MESSAGE(0xFF, cJSON_Number, number_item->type, "Message type is not number.");
     TEST_ASSERT_BITS_MESSAGE(cJSON_IsReference, 0, number_item->type, "Item should not have a string as reference.");
     TEST_ASSERT_BITS_MESSAGE(cJSON_StringIsConst, 0, number_item->type, "Item should not have a const string.");
-    TEST_ASSERT_NULL_MESSAGE(number_item->valuestring, "Valuestring is not NULL.");
+    TEST_ASSERT_NULL_MESSAGE(number_item->string, "string is not NULL.");
     TEST_ASSERT_NULL_MESSAGE(number_item->name, "Name is not NULL.");
 }
 

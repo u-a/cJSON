@@ -43,7 +43,7 @@ static void assert_is_array(cJSON *string_item)
     TEST_ASSERT_BITS_MESSAGE(0xFF, cJSON_Array, string_item->type, "Item type is not array.");
     TEST_ASSERT_BITS_MESSAGE(cJSON_IsReference, 0, string_item->type, "Item should not have a string as reference.");
     TEST_ASSERT_BITS_MESSAGE(cJSON_StringIsConst, 0, string_item->type, "Item should not have a const string.");
-    TEST_ASSERT_NULL_MESSAGE(string_item->valuestring, "Valuestring is not NULL.");
+    TEST_ASSERT_NULL_MESSAGE(string_item->string, "string is not NULL.");
     TEST_ASSERT_NULL_MESSAGE(string_item->name, "Name is not NULL.");
 }
 
@@ -87,7 +87,7 @@ static void parse_array_should_parse_arrays_with_one_element(void)
     assert_parse_array("[\"hello!\"]");
     TEST_ASSERT_NOT_NULL(item->child);
     TEST_ASSERT_BITS(0xFF, cJSON_String, item->child->type);
-    TEST_ASSERT_EQUAL_STRING("hello!", item->child->valuestring);
+    TEST_ASSERT_EQUAL_STRING("hello!", item->child->string);
     reset();
 
     assert_parse_array("[[]]");

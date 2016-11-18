@@ -56,9 +56,9 @@ static void reset(void)
     {
         cJSON_Delete(item->child);
     }
-    if (item->valuestring != NULL)
+    if (item->string != NULL)
     {
-        hooks.free_fn(item->valuestring);
+        hooks.free_fn(item->string);
     }
     memset(item, 0, sizeof(cJSON));
 }
