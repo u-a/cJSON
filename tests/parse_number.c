@@ -37,9 +37,9 @@ static void assert_is_number(cJSON *number_item)
     TEST_ASSERT_NULL_MESSAGE(number_item->next, "Linked list next pointer is not NULL.");
     TEST_ASSERT_NULL_MESSAGE(number_item->prev, "Linked list previous pointer is not NULL");
     TEST_ASSERT_NULL_MESSAGE(number_item->child, "Child pointer is not NULL.");
-    TEST_ASSERT_BITS_MESSAGE(0xFF, cJSON_Number, number_item->type, "Message type is not number.");
-    TEST_ASSERT_BITS_MESSAGE(cJSON_IsReference, 0, number_item->type, "Item should not have a string as reference.");
-    TEST_ASSERT_BITS_MESSAGE(cJSON_StringIsConst, 0, number_item->type, "Item should not have a const string.");
+    TEST_ASSERT_EQUAL_UINT_MESSAGE(cJSON_Number, number_item->type, "Message type is not number.");
+    TEST_ASSERT_FALSE_MESSAGE(number_item->is_reference, "Item should not have a string as reference.");
+    TEST_ASSERT_FALSE_MESSAGE(number_item->string_is_const, "Item should not have a const string.");
     TEST_ASSERT_NULL_MESSAGE(number_item->string, "string is not NULL.");
     TEST_ASSERT_NULL_MESSAGE(number_item->name, "Name is not NULL.");
 }
