@@ -146,7 +146,7 @@ static const unsigned char *parse_number(cJSON *item, const unsigned char *num)
         return NULL;
     }
 
-    item->valuedouble = number;
+    item->number = number;
 
     item->type = cJSON_Number;
 
@@ -227,7 +227,7 @@ static size_t update(const printbuffer *p)
 static unsigned char *print_number(const cJSON *item, printbuffer *p, const cJSON_Hooks * const hooks)
 {
     unsigned char *str = NULL;
-    double d = item->valuedouble;
+    double d = item->number;
     /* special case for 0. */
     if (d == 0)
     {
@@ -245,9 +245,9 @@ static unsigned char *print_number(const cJSON *item, printbuffer *p, const cJSO
         }
     }
     /* value is an int */
-    else if ((fabs(floor(item->valuedouble) - d) <= DBL_EPSILON) && (d <= INT_MAX) && (d >= INT_MIN))
+    else if ((fabs(floor(item->number) - d) <= DBL_EPSILON) && (d <= INT_MAX) && (d >= INT_MIN))
     {
-        int value = (int)item->valuedouble;
+        int value = (int)item->number;
         if (p)
         {
             str = ensure(p, 21, hooks);
@@ -1936,7 +1936,7 @@ static cJSON *internal_cJSON_CreateNumber(double num, const cJSON_Hooks * const 
     if(item)
     {
         item->type = cJSON_Number;
-        item->valuedouble = num;
+        item->number = num;
     }
 
     return item;
@@ -2179,7 +2179,7 @@ static cJSON *internal_cJSON_Duplicate(const cJSON *item, cjbool recurse, const 
     }
     /* Copy over all vars */
     newitem->type = item->type & (~cJSON_IsReference);
-    newitem->valuedouble = item->valuedouble;
+    newitem->number = item->number;
     if (item->string)
     {
         newitem->string = (char*)cJSON_strdup((unsigned char*)item->string, hooks);

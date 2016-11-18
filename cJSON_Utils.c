@@ -265,7 +265,7 @@ static int cJSONUtils_Compare(cJSON *a, cJSON *b)
     {
         case cJSON_Number:
             /* numeric mismatch. */
-            return (a->valuedouble != b->valuedouble) ? -2 : 0;
+            return (a->number != b->number) ? -2 : 0;
         case cJSON_String:
             /* string mismatch. */
             return (strcmp(a->string, b->string) != 0) ? -3 : 0;
@@ -543,7 +543,7 @@ static void cJSONUtils_CompareToPatch(cJSON *patches, const unsigned char *path,
     switch ((from->type & 0xFF))
     {
         case cJSON_Number:
-            if (from->valuedouble != to->valuedouble)
+            if (from->number != to->number)
             {
                 cJSONUtils_GeneratePatch(patches, (const unsigned char*)"replace", path, 0, to);
             }

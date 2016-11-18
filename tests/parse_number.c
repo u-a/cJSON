@@ -48,7 +48,7 @@ static void assert_parse_number(const char *string, double real)
 {
     TEST_ASSERT_NOT_NULL(parse_number(item, (const unsigned char*)string));
     assert_is_number(item);
-    TEST_ASSERT_EQUAL_DOUBLE(real, item->valuedouble);
+    TEST_ASSERT_EQUAL_DOUBLE(real, item->number);
 }
 
 static void parse_number_should_parse_zero(void)
