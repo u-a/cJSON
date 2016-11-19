@@ -39,7 +39,6 @@ static void assert_is_number(cJSON *number_item)
     TEST_ASSERT_EQUAL_UINT_MESSAGE(cJSON_Number, number_item->type, "Message type is not number.");
     TEST_ASSERT_FALSE_MESSAGE(number_item->is_reference, "Item should not have a string as reference.");
     TEST_ASSERT_FALSE_MESSAGE(number_item->string_is_const, "Item should not have a const string.");
-    TEST_ASSERT_NULL_MESSAGE(number_item->string, "string is not NULL.");
     TEST_ASSERT_NULL_MESSAGE(number_item->name, "Name is not NULL.");
 }
 
@@ -47,7 +46,7 @@ static void assert_parse_number(const char *string, double real)
 {
     TEST_ASSERT_NOT_NULL(parse_number(item, (const unsigned char*)string));
     assert_is_number(item);
-    TEST_ASSERT_EQUAL_DOUBLE(real, item->number);
+    TEST_ASSERT_EQUAL_DOUBLE(real, item->value.number);
 }
 
 static void parse_number_should_parse_zero(void)

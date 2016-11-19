@@ -41,7 +41,6 @@ static void assert_is_object(cJSON *object_item)
     TEST_ASSERT_EQUAL_UINT_MESSAGE(cJSON_Object, object_item->type, "Item type is not object.");
     TEST_ASSERT_FALSE_MESSAGE(object_item->is_reference, "Item should not have a string as reference.");
     TEST_ASSERT_FALSE_MESSAGE(object_item->string_is_const, "Item should not have a const string.");
-    TEST_ASSERT_NULL_MESSAGE(object_item->string, "string is not NULL.");
     TEST_ASSERT_NULL_MESSAGE(object_item->name, "Name is not NULL.");
 }
 

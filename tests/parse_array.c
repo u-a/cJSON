@@ -85,7 +85,7 @@ static void parse_array_should_parse_arrays_with_one_element(void)
     assert_parse_array("[\"hello!\"]");
     TEST_ASSERT_NOT_NULL(item->child);
     TEST_ASSERT_BITS(0xFF, cJSON_String, item->child->type);
-    TEST_ASSERT_EQUAL_STRING("hello!", item->child->string);
+    TEST_ASSERT_EQUAL_STRING("hello!", item->child->value.string);
     reset();
 
     assert_parse_array("[[]]");
