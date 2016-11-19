@@ -810,11 +810,13 @@ static const unsigned char *parse_value(cJSON *item, const unsigned char *value,
     if (!strncmp((const char*)value, "false", 5))
     {
         item->type = cJSON_False;
+        item->value.boolean = false;
         return value + 5;
     }
     if (!strncmp((const char*)value, "true", 4))
     {
         item->type = cJSON_True;
+        item->value.boolean = true;
         return value + 4;
     }
     if (*value == '\"')
@@ -1889,6 +1891,7 @@ static cJSON *internal_cJSON_CreateTrue(const cJSON_Hooks * const hooks)
     if(item)
     {
         item->type = cJSON_True;
+        item->value.boolean = true;
     }
 
     return item;
@@ -1904,6 +1907,7 @@ static cJSON *internal_cJSON_CreateFalse(const cJSON_Hooks * const hooks)
     if(item)
     {
         item->type = cJSON_False;
+        item->value.boolean = false;
     }
 
     return item;
@@ -1919,6 +1923,7 @@ static cJSON *internal_cJSON_CreateBool(cjbool b, const cJSON_Hooks * const hook
     if(item)
     {
         item->type = b ? cJSON_True : cJSON_False;
+        item->value.boolean = b;
     }
 
     return item;
@@ -2177,6 +2182,7 @@ static cJSON *internal_cJSON_Duplicate(const cJSON *item, cjbool recurse, const 
     }
     /* Copy over all vars */
     newitem->type = item->type;
+    newitem->value.string = NULL; /* default the pointer to NULL */
     newitem->is_reference = false;
     newitem->string_is_const = false;
     if ((item->type == cJSON_String) && (item->value.string != NULL))
@@ -2187,9 +2193,13 @@ static cJSON *internal_cJSON_Duplicate(const cJSON *item, cjbool recurse, const 
             goto fail;
         }
     }
-    else
+    else if (item->type == cJSON_Number)
     {
         newitem->value.number = item->value.number;
+    }
+    else if (item->type & (cJSON_True | cJSON_False)) /* is boolean */
+    {
+        newitem->value.boolean = item->value.boolean;
     }
     if (item->name)
     {
