@@ -39,7 +39,6 @@ static void assert_is_array(cJSON *string_item)
     TEST_ASSERT_NOT_NULL_MESSAGE(string_item, "Item is NULL.");
 
     TEST_ASSERT_NULL_MESSAGE(string_item->next, "Linked list next pointer is not NULL.");
-    TEST_ASSERT_NULL_MESSAGE(string_item->prev, "Linked list previous pointer is not NULL");
     TEST_ASSERT_EQUAL_UINT_MESSAGE(cJSON_Array, string_item->type, "Item type is not array.");
     TEST_ASSERT_FALSE_MESSAGE(string_item->is_reference, "Item should not have a string as reference.");
     TEST_ASSERT_FALSE_MESSAGE(string_item->string_is_const, "string is not NULL.");

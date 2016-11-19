@@ -992,7 +992,6 @@ static const unsigned char *parse_array(cJSON *item, const unsigned char *value,
         }
         /* add new item to end of the linked list */
         child->next = new_item;
-        new_item->prev = child;
         child = new_item;
 
         /* go to the next comma */
@@ -1250,7 +1249,6 @@ static const unsigned char *parse_object(cJSON *item, const unsigned char *value
         }
         /* add to linked list */
         child->next = new_item;
-        new_item->prev = child;
 
         child = new_item;
         value = skip(parse_string(child, skip(value + 1), ep, hooks));
@@ -1621,7 +1619,6 @@ cjbool cJSON_HasObjectItem(const cJSON *object, const char *name)
 static void suffix_object(cJSON *prev, cJSON *item)
 {
     prev->next = item;
-    item->prev = prev;
 }
 
 /* Utility for handling references. */
@@ -1635,7 +1632,7 @@ static cJSON *create_reference(const cJSON *item, const cJSON_Hooks * const hook
     memcpy(ref, item, sizeof(cJSON));
     ref->name = NULL;
     ref->is_reference = true;
-    ref->next = ref->prev = NULL;
+    ref->next = NULL;
     return ref;
 }
 
@@ -1718,8 +1715,10 @@ void cJSON_AddItemReferenceToObject(cJSON *object, const char *name, cJSON *item
 cJSON *cJSON_DetachItemFromArray(cJSON *array, size_t which)
 {
     cJSON *c = array->child;
+    cJSON *previous = NULL;
     while (c && (which > 0))
     {
+        previous = c;
         c = c->next;
         which--;
     }
@@ -1728,21 +1727,19 @@ cJSON *cJSON_DetachItemFromArray(cJSON *array, size_t which)
         /* item doesn't exist */
         return NULL;
     }
-    if (c->prev)
+    if (c == array->child)
     {
-        /* not the first element */
-        c->prev->next = c->next;
-    }
-    if (c->next)
-    {
-        c->next->prev = c->prev;
-    }
-    if (c==array->child)
-    {
+        /* first element */
         array->child = c->next;
     }
+    else
+    {
+        /* not the first element */
+        previous->next = c->next;
+    }
+
     /* make sure the detached item doesn't point anywhere anymore */
-    c->prev = c->next = NULL;
+    c->next = NULL;
 
     return c;
 }
@@ -1786,8 +1783,10 @@ void cJSON_DeleteItemFromObject(cJSON *object, const char *name)
 void cJSON_InsertItemInArray(cJSON *array, size_t which, cJSON *newitem)
 {
     cJSON *c = array->child;
+    cJSON *previous = NULL;
     while (c && (which > 0))
     {
+        previous = c;
         c = c->next;
         which--;
     }
@@ -1797,23 +1796,24 @@ void cJSON_InsertItemInArray(cJSON *array, size_t which, cJSON *newitem)
         return;
     }
     newitem->next = c;
-    newitem->prev = c->prev;
-    c->prev = newitem;
     if (c == array->child)
     {
+        /* first element */
         array->child = newitem;
+        return;
     }
-    else
-    {
-        newitem->prev->next = newitem;
-    }
+
+    /* not first element */
+    previous->next = newitem;
 }
 
 static void internal_cJSON_ReplaceItemInArray(cJSON *array, size_t which, cJSON *newitem, const cJSON_Hooks * const hooks)
 {
     cJSON *c = array->child;
+    cJSON *previous = NULL;
     while (c && (which > 0))
     {
+        previous = c;
         c = c->next;
         which--;
     }
@@ -1822,20 +1822,19 @@ static void internal_cJSON_ReplaceItemInArray(cJSON *array, size_t which, cJSON 
         return;
     }
     newitem->next = c->next;
-    newitem->prev = c->prev;
-    if (newitem->next)
-    {
-        newitem->next->prev = newitem;
-    }
     if (c == array->child)
     {
+        /* first element */
         array->child = newitem;
     }
     else
     {
-        newitem->prev->next = newitem;
+        /* not first element */
+        previous->next = newitem;
     }
-    c->next = c->prev = NULL;
+
+    /* make sure the replaced item doesn't point anywhere anymore */
+    c->next = NULL;
     internal_cJSON_Delete(c, hooks);
 }
 void cJSON_ReplaceItemInArray(cJSON *array, size_t which, cJSON *newitem)
@@ -2214,9 +2213,8 @@ static cJSON *internal_cJSON_Duplicate(const cJSON *item, cjbool recurse, const 
         }
         if (next != NULL)
         {
-            /* If newitem->child already set, then crosswire ->prev and ->next and move on */
+            /* If newitem->child already set, then add newchild and move on */
             next->next = newchild;
-            newchild->prev = next;
             next = newchild;
         }
         else

@@ -37,7 +37,6 @@ static void assert_is_value(cJSON *value_item, int type)
     TEST_ASSERT_NOT_NULL_MESSAGE(value_item, "Item is NULL.");
 
     TEST_ASSERT_NULL_MESSAGE(value_item->next, "Linked list next pointer is not NULL.");
-    TEST_ASSERT_NULL_MESSAGE(value_item->prev, "Linked list previous pointer is not NULL");
     TEST_ASSERT_EQUAL_UINT_MESSAGE(type, value_item->type, "Message type is not of the given type.");
     TEST_ASSERT_FALSE_MESSAGE(value_item->is_reference, "Item should not have a string as reference.");
     TEST_ASSERT_FALSE_MESSAGE(value_item->string_is_const, "Item should not have a const string.");

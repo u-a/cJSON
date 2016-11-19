@@ -38,7 +38,6 @@ static void assert_is_string(cJSON *string_item)
     TEST_ASSERT_NOT_NULL_MESSAGE(string_item, "Item is NULL.");
 
     TEST_ASSERT_NULL_MESSAGE(string_item->next, "Linked list next pointer is not NULL.");
-    TEST_ASSERT_NULL_MESSAGE(string_item->prev, "Linked list previous pointer is not NULL");
     TEST_ASSERT_NULL_MESSAGE(string_item->child, "Child pointer is not NULL.");
     TEST_ASSERT_EQUAL_UINT_MESSAGE(cJSON_String, string_item->type, "Item type is not string.");
     TEST_ASSERT_TRUE_MESSAGE(string_item->is_reference, "Item should have a string as reference.");
